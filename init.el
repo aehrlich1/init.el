@@ -39,6 +39,7 @@
 (setq dired-kill-when-opening-new-dired-buffer t)
 (setq help-window-select t)
 (setq-default display-line-numbers-width 3)
+(setq-default fill-column 90)
 
 (tool-bar-mode -1)
 (menu-bar-mode -1)
@@ -50,8 +51,8 @@
 (global-hl-line-mode 1)
 (global-auto-revert-mode 1)
 (global-display-line-numbers-mode 1)
-(visual-line-mode 1)
 (recentf-mode 1)
+(visual-line-mode 1)
 (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -112,7 +113,7 @@
   (setq org-bookmark-names-plist nil)
   (setq org-deadline-warning-days 0)
   (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
-  (setq org-agenda-span 1)
+  (setq org-agenda-span 'week)
   (setq org-agenda-window-setup 'current-window)
   (setq org-todo-keywords '((sequence "TODO(t)" "PROJ(p)" "WAIT(w)" "SOME(s)" "|" "DONE(d)" "KILL(k)")))
   (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+")))
@@ -192,5 +193,10 @@
   :ensure t
   :init
   (rainbow-delimiters-mode t))
+
+(use-package visual-fill-column
+  :ensure t
+  :init
+  (add-hook 'visual-line-mode-hook #'visual-fill-column-mode))
 
 (load custom-file)
