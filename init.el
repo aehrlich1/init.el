@@ -134,7 +134,8 @@
   (setq org-agenda-span 'week)
   (setq org-agenda-window-setup 'current-window)
   (setq org-agenda-sorting-strategy
-	'((agenda time-up todo-state-up priority-down category-keep deadline-down)))
+	'((agenda time-up todo-state-up priority-down tag-up category-keep deadline-down)
+	  (todo priority-down category-keep tag-up)))
   (setq org-agenda-custom-commands
 	'(("w" "Weekly Agenda"
 	   ((agenda ""
@@ -156,6 +157,7 @@
 		    ((org-agenda-overriding-header "WAITING ITEMS")))
 	    (todo "TODO"
 		  ((org-agenda-overriding-header "UNSCHEDULED TODO ITEMS")
+		   (org-agenda-tag-filter-preset nil)
 		  (org-agenda-skip-function
 		   '(org-agenda-skip-entry-if 'deadline 'scheduled))))
 	    (todo "PROJ"
@@ -184,6 +186,9 @@
    (:map org-mode-map)
    ("C-x C-x" . org-edit-special)
    ("C-j"     . nil)
+   ("C-C C-q" . counsel-org-tag)
+   (:map org-agenda-mode-map)
+   ("C-C C-q" . counsel-org-tag-agenda)
    (:map org-src-mode-map)
    ("C-x C-x" . org-edit-src-exit)))
 
