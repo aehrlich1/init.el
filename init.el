@@ -111,11 +111,8 @@
   (setq org-startup-indented t)
   (setq org-catch-invisible-edits 'error)
   (setq org-bookmark-names-plist nil)
-  (setq org-deadline-warning-days 0)
-  (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
-  (setq org-agenda-span 'week)
-  (setq org-agenda-window-setup 'current-window)
-  (setq org-todo-keywords '((sequence "TODO(t)" "PROJ(p)" "WAIT(w)" "SOME(s)" "|" "DONE(d)" "KILL(k)")))
+  (setq org-todo-keywords
+	'((sequence "TODO(t)" "PROJ(p)" "WAIT(w)" "SOME(s)" "|" "DONE(d)" "KILL(k)")))
   (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+")))
   (setq org-agenda-files (list (concat org-directory "/gtd")))
   (setq org-default-notes-file (concat org-directory "/gtd/capture.org"))
@@ -132,10 +129,53 @@
   (setq org-capture-templates
 	'(("t" "Todo" entry (file "")
 	   "* TODO %?\nSCHEDULED: %t\n %i")))
+  (setq org-deadline-warning-days 0)
+  (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
+  (setq org-agenda-span 'week)
+  (setq org-agenda-window-setup 'current-window)
+  (setq org-agenda-sorting-strategy
+	'((agenda time-up todo-state-up priority-down category-keep deadline-down)))
   (setq org-agenda-custom-commands
-	'(("y" "Agenda and Home-related tasks"
-	   ((agenda "")
-	    (todo "WAIT")))))
+	'(("w" "Weekly Agenda"
+	   ((agenda ""
+		    ((org-agenda-overriding-header "WEEKLY AGENDA")
+		     (org-agenda-span 'week)))
+	    (todo "WAIT"
+		  ((org-agenda-overriding-header "WAITING ITEMS")))
+	    (todo "TODO"
+		  ((org-agenda-overriding-header "UNSCHEDULED TODO ITEMS")
+		  (org-agenda-skip-function
+		   '(org-agenda-skip-entry-if 'deadline 'scheduled))))
+	    ))
+	  ("d" "Daily Agenda"
+	   ((agenda ""
+		    ((org-agenda-overriding-header "DAILY AGENDA")
+		     (org-agenda-span 'day)))))
+	  ("o" "Overview"
+	   ((todo "WAIT"
+		    ((org-agenda-overriding-header "WAITING ITEMS")))
+	    (todo "TODO"
+		  ((org-agenda-overriding-header "UNSCHEDULED TODO ITEMS")
+		  (org-agenda-skip-function
+		   '(org-agenda-skip-entry-if 'deadline 'scheduled))))
+	    (todo "PROJ"
+		  ((org-agenda-overriding-header "PROJECTS")))
+	    (todo "SOME"
+		  ((org-agenda-overriding-header "SOMEDAY ITEMS")))
+	    ))
+	  ("r" "Weekly Review"
+	   ((todo "DONE"
+		    ((org-agenda-overriding-header "DONE ITEMS")))
+	    (todo "KILL"
+		  ((org-agenda-overriding-header "KILLED ITEMS")))
+	    (todo "TODO"
+		  ((org-agenda-overriding-header "UNSCHEDULED TODO ITEMS")
+		  (org-agenda-skip-function
+		   '(org-agenda-skip-entry-if 'deadline 'scheduled))))
+	    (todo "SOME"
+		  ((org-agenda-overriding-header "SOMEDAY ITEMS")))
+	    ))
+	  ))
   :bind
   (("C-c l"   . org-store-link)
    ("C-c a"   . org-agenda)
@@ -172,15 +212,6 @@
   :disabled
   :init
   (org-reveal-root "file:///Users/anatol/src/reveal.js"))
-
-(use-package org-super-agenda
-  :ensure t
-  :config
-  (setq org-super-agenda-groups
-	'((:name "Today"
-	       :time-grid t
-	       :not (:todo "WAIT"))
-	  (:todo "WAIT"))))
 
 (use-package nord-theme
   :disabled t
