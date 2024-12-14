@@ -129,13 +129,28 @@
   (setq org-capture-templates
 	'(("t" "Todo" entry (file "")
 	   "* TODO %?\nSCHEDULED: %t\n %i")))
-  (setq org-deadline-warning-days 0)
+  :bind
+  (("C-c l"   . org-store-link)
+   ("C-c a"   . org-agenda)
+   ("C-c c"   . org-capture)
+   ("M-j"     . (lambda () (interactive) (org-capture nil "t")))
+   (:map org-mode-map)
+   ("C-x C-x" . org-edit-special)
+   ("C-j"     . nil)
+   ("C-C C-q" . counsel-org-tag)
+   (:map org-src-mode-map)
+   ("C-x C-x" . org-edit-src-exit)))
+
+
+(use-package org-agenda
+  :init
   (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
   (setq org-agenda-span 'week)
   (setq org-agenda-window-setup 'current-window)
   (setq org-agenda-sorting-strategy
 	'((agenda time-up todo-state-up priority-down tag-up category-keep deadline-down)
 	  (todo priority-down category-keep tag-up)))
+  (setq org-deadline-warning-days 0)
   (setq org-agenda-custom-commands
 	'(("w" "Weekly Agenda"
 	   ((agenda ""
@@ -179,18 +194,8 @@
 	    ))
 	  ))
   :bind
-  (("C-c l"   . org-store-link)
-   ("C-c a"   . org-agenda)
-   ("C-c c"   . org-capture)
-   ("M-j"     . (lambda () (interactive) (org-capture nil "t")))
-   (:map org-mode-map)
-   ("C-x C-x" . org-edit-special)
-   ("C-j"     . nil)
-   ("C-C C-q" . counsel-org-tag)
-   (:map org-agenda-mode-map)
-   ("C-C C-q" . counsel-org-tag-agenda)
-   (:map org-src-mode-map)
-   ("C-x C-x" . org-edit-src-exit)))
+   ((:map org-agenda-mode-map)
+   ("C-c C-q" . counsel-org-tag-agenda)))
 
 (use-package org-journal
   :ensure t
