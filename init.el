@@ -187,4 +187,9 @@
   (setq nord-region-highlight "frost")
   (load-theme 'nord t))
 
+(use-package rainbow-delimiters
+  :ensure t
+  :init
+  (rainbow-delimiters-mode t))
+
 (load custom-file)
