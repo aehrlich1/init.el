@@ -18,6 +18,15 @@
     (interactive)
     (counsel-rg nil org-directory))
 
+(defun ae/org-agenda-open-item-narrowed ()
+  "Open the current Org agenda item, narrow to its subtree, and add a new line for notes."
+  (interactive)
+  (org-agenda-switch-to)
+  (org-narrow-to-subtree)
+  (end-of-line)
+  (newline)
+  (org-indent-line))
+
 (exec-path-from-shell-initialize)
 
 (setq user-full-name "Anatol Ehrlich")
@@ -195,7 +204,8 @@
 	  ))
   :bind
    ((:map org-agenda-mode-map)
-   ("C-c C-q" . counsel-org-tag-agenda)))
+    ("C-c C-q" . counsel-org-tag-agenda)
+    ("N"       . #'ae/org-agenda-open-item-narrowed)))
 
 (use-package org-journal
   :ensure t
