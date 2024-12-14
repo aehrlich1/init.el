@@ -84,7 +84,8 @@
   :init
   (doom-modeline-mode 1)
   :config
-  (setq doom-modeline-icon nil))
+  (setq doom-modeline-icon nil)
+  (setq doom-modeline-height 22))
 
 (use-package ivy-prescient
   :ensure t
