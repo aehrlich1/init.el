@@ -18,25 +18,21 @@
     (interactive)
     (counsel-rg nil org-directory))
 
-(defun ae/org-agenda-open-item-narrowed ()
-  "Open the current Org agenda item, narrow to its subtree, and add a new line for notes."
+(defun my/counsel-org-journal-search ()
   (interactive)
-  (org-agenda-switch-to)
-  (org-narrow-to-subtree)
-  (end-of-line)
-  (newline)
-  (org-indent-line))
+  (let ((journal-dir (expand-file-name "journal/" org-directory)))
+    (counsel-rg "" journal-dir nil ".*\\.org$")))
 
 (exec-path-from-shell-initialize)
+
+
+(setq-default line-spacing 4)
+(add-to-list 'default-frame-alist '(font . "Fira Code-12"))
 
 (setq user-full-name "Anatol Ehrlich")
 (setq user-mail-address "anatol.ehrlich@gmail.com")
 (setq mac-command-modifier 'meta)
 (setq mac-right-option-modifier nil)
-(setq frame-resize-pixelwise t)
-(add-to-list 'default-frame-alist '(font . "Fira Code-11.5"))
-(add-to-list 'default-frame-alist '(undecorated-round . t))
-
 (setq inhibit-startup-screen t)
 (setq scroll-preserve-screen-position t)
 (setq auto-save-default nil)
@@ -48,7 +44,7 @@
 (setq dired-kill-when-opening-new-dired-buffer t)
 (setq help-window-select t)
 (setq-default display-line-numbers-width 3)
-(setq-default fill-column 90)
+(setq-default fill-column 110)
 
 (tool-bar-mode -1)
 (menu-bar-mode -1)
@@ -78,16 +74,13 @@
   (counsel-mode 1)
   :config
   (setq ivy-initial-inputs-alist nil)
+  (setq counsel-org-headline-display-todo t)
+  (setq counsel-org-headline-display-tags t)
   (advice-add 'counsel-rg :around #'ae/counsel-rg-preview-advice)
   :bind
   ("C-h C-s" . swiper-isearch)
-  ("C-x C-g" . counsel-org-goto-all)
+  ("C-c C-j" . counsel-org-goto-all)
   ("C-x C-r" . counsel-recentf))
-
-(use-package doom-themes
-  :ensure t
-  :config
-  (load-theme 'doom-nord t)) ; doom-palenight
 
 (use-package doom-modeline
   :ensure t
@@ -96,6 +89,12 @@
   :config
   (setq doom-modeline-icon nil)
   (setq doom-modeline-height 22))
+
+(use-package helm-org
+  :disabled t
+  :ensure t
+  :bind
+  ("C-c C-j" . helm-org-agenda-files-headings))
 
 (use-package ivy-prescient
   :ensure t
@@ -107,18 +106,15 @@
   :init
   (ivy-rich-mode 1))
 
-(use-package multiple-cursors
-  :ensure t
-  :bind ("C-S-c C-S-c" . mc/edit-lines))
-
 (use-package org
   :init
   (setq org-ascii-text-width 80)
   (setq org-cycle-open-archived-trees t)
   (setq org-indent-indentation-per-level 1)
-  (setq org-indent-mode-turns-on-hiding-stars nil)
+  (setq org-indent-mode-turns-on-hiding-stars t)
   (setq org-startup-indented t)
   (setq org-catch-invisible-edits 'error)
+  (setq org-complete-tags-always-offer-all-agenda-tags t)
   (setq org-bookmark-names-plist nil)
   (setq org-todo-keywords
 	'((sequence "TODO(t)" "PROJ(p)" "WAIT(w)" "SOME(s)" "|" "DONE(d)" "KILL(k)")))
@@ -133,19 +129,26 @@
      ("PROJ" . "#1b85b8")
      ("SOME" . "#895AD6")
      ("WAIT" . "#FFEE8C")
-     ("DONE" . org-done)
-     ("KILL" . "#F1420B")))
+     ("DONE" . org-done) ; "#9EBC85"
+     ("KILL" . org-done)))
   (setq org-capture-templates
-	'(("t" "Todo" entry (file "")
-	   "* TODO %?\nSCHEDULED: %t\n %i")))
+	'(("c" "Capture" entry (file "")
+	   "* TODO %?")
+	  ("t" "Task" entry (file "~/Dropbox/emacs/gtd/tasks.org")
+	   "* TODO %?\nSCHEDULED: %t\n %i")
+	  ("w" "Wait" entry (file "~/Dropbox/emacs/gtd/tasks.org")
+	   "* WAIT %?")
+	  ("p" "Project" entry (file "~/Dropbox/emacs/gtd/projects.org")
+	   "* PROJ %?")))
   :bind
   (("C-c l"   . org-store-link)
    ("C-c a"   . org-agenda)
    ("C-c c"   . org-capture)
-   ("M-j"     . (lambda () (interactive) (org-capture nil "t")))
+   ("M-j"     . (lambda () (interactive) (org-capture nil "c")))
    (:map org-mode-map)
    ("C-x C-x" . org-edit-special)
    ("C-j"     . nil)
+   ("C-c C-j" . nil)
    ("C-C C-q" . counsel-org-tag)
    (:map org-src-mode-map)
    ("C-x C-x" . org-edit-src-exit)))
@@ -156,10 +159,20 @@
   (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
   (setq org-agenda-span 'week)
   (setq org-agenda-window-setup 'current-window)
+  (setq org-agenda-show-current-time-in-grid nil)
   (setq org-agenda-sorting-strategy
 	'((agenda time-up todo-state-up priority-down tag-up category-keep deadline-down)
-	  (todo priority-down category-keep tag-up)))
+	  (ptodo priority-down category-keep tag-up)))
   (setq org-deadline-warning-days 0)
+  (setq org-agenda-prefix-format
+	'((agenda . "  % s")
+	  (todo . " %i %-12:c")
+	  (tags . " %i %-12:c")
+	  (search . " %i %-12:c")))
+  (setq org-agenda-scheduled-leaders
+	'("Sched: " "Sched.%2dx: "))
+  (setq org-agenda-deadline-leaders
+	'("Deadl: " "In %3d d.: " "%2d d. ago: "))
   (setq org-agenda-custom-commands
 	'(("w" "Weekly Agenda"
 	   ((agenda ""
@@ -194,6 +207,9 @@
 		    ((org-agenda-overriding-header "DONE ITEMS")))
 	    (todo "KILL"
 		  ((org-agenda-overriding-header "KILLED ITEMS")))
+	    (todo ""
+		  ((org-agenda-files '("~/Dropbox/emacs/gtd/capture.org"))
+		   (org-agenda-overriding-header "CAPTURE ITEMS")))
 	    (todo "TODO"
 		  ((org-agenda-overriding-header "UNSCHEDULED TODO ITEMS")
 		  (org-agenda-skip-function
@@ -226,19 +242,50 @@
 (use-package org-roam
   :ensure t
   :init
-  (setq org-roam-directory (concat org-directory "/roam")))
+  (setq org-roam-directory (concat org-directory "/roam"))
+  :config
+  (org-roam-db-autosync-mode)
+  (setq org-roam-capture-templates
+	'(("d" default plain "%?"
+	   :if-new (file+head "${slug}.org" "#+title: ${title}\n")
+	   :unnarrowed t)))
+  :bind
+  ("C-c n l" . org-roam-buffer-toggle)
+  ("C-c n f" . org-roam-node-find)
+  ("C-c n i" . org-roam-node-insert))
+
+(use-package org-roam-ui
+  :ensure t
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme t)
+  (setq org-roam-ui-follow t)
+  (setq org-roam-ui-update-on-save t)
+  (setq org-roam-ui-open-on-start t))
 
 (use-package org-reveal
   :disabled
   :init
   (org-reveal-root "file:///Users/anatol/src/reveal.js"))
 
-(use-package nord-theme
-  :disabled t
+(use-package atom-one-dark-theme
   :ensure t
   :config
-  (setq nord-region-highlight "frost")
-  (load-theme 'nord t))
+  (load-theme 'atom-one-dark t)
+  (custom-set-faces
+   '(font-lock-constant-face ((t (:foreground "#d19a66"))))
+   '(font-lock-keyword-face ((t (:foreground "#d19a66"))))))
+
+(use-package doom-themes
+  :disabled t
+  :ensure t
+  :custom
+  (doom-themes-enable-bold nil)
+  (doom-themes-enable-italic nil)
+  (doom-themes-treemacs-theme "doom-atom")
+  :config
+  (load-theme 'doom-one t)
+  (doom-themes-org-config))
 
 (use-package rainbow-delimiters
   :ensure t
